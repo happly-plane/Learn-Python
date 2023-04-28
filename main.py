@@ -1,16 +1,41 @@
-# 这是一个示例 Python 脚本。
+import numpy as np
+import pandas as pd
+from sklearn import preprocessing
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression,Lasso,ElasticNet
+from sklearn.metrics import r2_score
+from sklearn.metrics import mean_squared_error
+import matplotlib.pyplot as plt
+import seaborn as sn
 
-# 按 Shift+F10 执行或将其替换为您的代码。
-# 按 双击 Shift 在所有地方搜索类、文件、工具窗口、操作和设置。
+data = pd.read_csv("HousingData.csv")
+data.head() #查看前五行
+data.tail()
+data.sample()
+data.info() #查看数据的类型，完整性
+data.describe() #查看数据的统计特征（均值、方差等）
+data.dropna(inplace=True) #删除有缺失的样本
 
+for id in data.columns[:-1]:
+    sn.pairplot(data[[id,data.columns[-1]]])
+y = data['MEDV'] # 标签-房价
+X = data.drop(['MEDV'], axis=1) #去掉标签（房价）的数据子集
 
-def print_hi(name):
-    # 在下面的代码行中使用断点来调试脚本。
-    print(f'Hi, {name}')  # 按 Ctrl+F8 切换断点。
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3)
+scaler=preprocessing.StandardScaler().fit(X_train)
+X_train=scaler.transform(X_train)
+X_test=scaler.transform(X_test)
 
+lr = LinearRegression() #实例化一个线性回归对象
+lr.fit(X_train, y_train) #采用fit方法，拟合回归系数和截距
+print(lr.intercept_)   #输出截距
+print(lr.coef_)   #输出系数   可分析特征的重要性以及与目标的关系
+y_pred = lr.predict(X_test)#模型预测
+print("R2=",r2_score(y_test, y_pred))#模型评价, 决定系数
+#print("mse=",mean_squared_error(y_test, y_pred))#均方误差
+#print(lr.intercept_)  #输出截距
+#print(lr.coef_)  #系数
 
-# 按间距中的绿色按钮以运行脚本。
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# 访问 https://www.jetbrains.com/help/pycharm/ 获取 PyCharm 帮助
+plt.plot(y_test.values,c="r",label="y_test")
+plt.plot(y_pred,c="b",label="y_pred")
+plt.legend()
